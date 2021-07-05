@@ -1,0 +1,18 @@
+server:
+  port: 12100
+spring:
+  application:
+    name: notes
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.1.220:3306/Notes?serverTimezone=Asia/Shanghai
+    username: root
+    password: xyy12131
+  jpa:
+    hibernate:
+      ddl-auto: update
+  elasticsearch:
+    rest:
+      uris: 192.168.1.220:9200
+  main:
+    allow-bean-definition-overriding: true
