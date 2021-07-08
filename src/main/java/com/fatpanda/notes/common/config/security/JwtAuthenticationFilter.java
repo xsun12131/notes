@@ -1,5 +1,6 @@
 package com.fatpanda.notes.common.config.security;
 
+import com.fatpanda.notes.common.utils.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -24,8 +25,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        // 获取token, 并检查登录状态
-        SecurityUtils.checkAuthentication(request);
+        String token = JwtTokenUtils.getToken(request);
+        if(StringUtil.isNotBlank(token)) {
+            // 获取token, 并检查登录状态
+            SecurityUtils.checkAuthentication(request);
+        }
         chain.doFilter(request, response);
     }
     

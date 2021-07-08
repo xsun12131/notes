@@ -16,3 +16,6 @@ spring:
       uris: 192.168.1.220:9200
   main:
     allow-bean-definition-overriding: true
+swagger:
+  enable: true
+  loginUrl: /login

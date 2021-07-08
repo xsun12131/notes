@@ -32,12 +32,12 @@ public class EsNote implements BaseEntity {
 
     @ApiModelProperty(value = "标题")
     @NotBlank
-    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", store = true)
     private String title;
 
     @ApiModelProperty(value = "内容")
     @NotBlank
-    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", store = true)
     private String content;
 
     @ApiModelProperty(value = "摘要")

@@ -5,6 +5,7 @@ import com.fatpanda.notes.common.model.config.BaseEntityListeners;
 import com.fatpanda.notes.common.model.entity.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @EntityListeners({AuditingEntityListener.class, BaseEntityListeners.class})
 @SQLDelete(sql = "update note set del_flag = 1 where id = ?")
 @SQLDeleteAll(sql = "update note set del_flag = 1 where id = ?")

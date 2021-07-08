@@ -13,14 +13,19 @@ import com.fatpanda.notes.repository.NoteRepository;
 import com.fatpanda.notes.service.NoteService;
 import com.github.wenhao.jpa.Specifications;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -136,34 +141,36 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public PageResult<NoteListVo> search(SearchDto searchDto) {
-        //todo 高亮搜索
-        /**
-         * 创建查询体
-         */
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        BoolQueryBuilder builder = QueryBuilders.boolQuery();
-//        /**
-//         * 设置聚合条件
-//         */
-//        RangeQueryBuilder query = QueryBuilders.rangeQuery("age").from("30").to("60");
-        /**
-         * 将聚合条件设置入查询体之中
-         */
-//        builder.must(query);
-        MatchQueryBuilder queryTitle = QueryBuilders.matchQuery("title", searchDto.getQuery()).analyzer("ik_smart");
-        MatchQueryBuilder queryContent = QueryBuilders.matchQuery("content", searchDto.getQuery()).analyzer("ik_smart");
-        //设置高亮
-//        queryBuilder.
-//        queryBuilder.withHighlightFields(new HighlightBuilder.Field("title").preTags("<font color='red'>").postTags("</font>"));
-        builder.should(queryTitle);
-        builder.should(queryContent);
+        //todo 分页
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
+        // 构建布尔查询
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
+        // 查询
+        nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+        // 排序
+        String sortField = searchDto.getSort();      // 排序字段
+        String sortRule = "ASC";        // 排序规则 - 顺序(ASC)/倒序(DESC)
+        if (StringUtil.isNotBlank(sortField)) {
+            nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort(sortField).order(SortOrder.valueOf(sortRule)));
+        }
+        // 构建分页
+        nativeSearchQueryBuilder.withPageable(PageRequest.of(searchDto.getPageNum() - 1, searchDto.getPageSize()));
 
-        Pageable pageable = PageRequest.of(searchDto.getPageNum() -1, searchDto.getPageSize());
-        Page<EsNote> esNotePage = noteEsRepository.search(builder, pageable);
+        // 构建高亮查询
+        HighlightBuilder.Field field = new HighlightBuilder.Field("content").preTags("<font style='color:red'>").postTags("</font>");
+        nativeSearchQueryBuilder.withHighlightFields(field);  // 名字高亮
+        NativeSearchQuery build = nativeSearchQueryBuilder.build();
 
-        return PageResult.pageToPageResult(esNotePage,
-                esNotePage.getContent().stream()
-                        .map(esNote -> NoteListVo.builder().id(esNote.getId()).title(esNote.getTitle()).summary(esNote.getSummary()).build())
-                        .collect(Collectors.toList()));
+        SearchHits<EsNote> esNoteSearchHits = template.search(build, EsNote.class);
+        List<NoteListVo> noteListVoList = esNoteSearchHits.get().map(esNoteSearchHit -> {
+            EsNote esNote = esNoteSearchHit.getContent();
+            return NoteListVo.builder().id(esNote.getId()).title(esNote.getTitle()).summary(esNoteSearchHit.getHighlightField("content").get(0)).build();
+        }).collect(Collectors.toList());
+
+        PageResult pageResult = new PageResult();
+        pageResult.setContent(noteListVoList);
+        return pageResult;
     }
+
 }

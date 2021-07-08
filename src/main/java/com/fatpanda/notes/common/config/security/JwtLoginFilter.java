@@ -3,6 +3,7 @@ package com.fatpanda.notes.common.config.security;
 import com.fatpanda.notes.common.utils.HttpUtils;
 import com.fatpanda.notes.common.utils.JsonUtils;
 import com.fatpanda.notes.pojo.dto.UserLogin;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -24,22 +25,23 @@ import java.nio.charset.Charset;
 
 /**
  * 启动登录认证流程过滤器
+ *
  * @author Louis
  * @date Jun 29, 2019
  */
 public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
-    
+
     public JwtLoginFilter(AuthenticationManager authManager) {
         setAuthenticationManager(authManager);
     }
-    
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
         // POST 请求 /login 登录时拦截， 由此方法触发执行登录认证流程，可以在此覆写整个登录认证逻辑
-        super.doFilter(req, res, chain); 
+        super.doFilter(req, res, chain);
     }
-    
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         // 可以在此覆写尝试进行登录认证的逻辑，登录成功之后等操作不再此方法内
@@ -47,34 +49,32 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         // 此过滤器的用户名密码默认从request.getParameter()获取，但是这种
         // 读取方式不能读取到如 application/json 等 post 请求数据，需要把
         // 用户名密码的读取逻辑修改为到流中读取request.getInputStream()
-
-        String body = getBody(request);
-        UserLogin userLogin = JsonUtils.fromJson(body, UserLogin.class);
-        String username = userLogin.getUsername();
-        String password = userLogin.getPassword();
-
-        if (username == null) {
-            username = "";
+        if (request.getContentType().contains(MediaType.APPLICATION_JSON_VALUE)) {
+            String body = getBody(request);
+            UserLogin userLogin = JsonUtils.fromJson(body, UserLogin.class);
+            String username = userLogin.getUsername();
+            String password = userLogin.getPassword();
+            if (username == null) {
+                username = "";
+            }
+            if (password == null) {
+                password = "";
+            }
+            username = username.trim();
+            JwtAuthenticatioToken authRequest = new JwtAuthenticatioToken(username, password);
+            // Allow subclasses to set the "details" property
+            setDetails(request, authRequest);
+            return this.getAuthenticationManager().authenticate(authRequest);
+        } else {
+            return super.attemptAuthentication(request, response);
         }
 
-        if (password == null) {
-            password = "";
-        }
 
-        username = username.trim();
-
-        JwtAuthenticatioToken authRequest = new JwtAuthenticatioToken(username, password);
-
-        // Allow subclasses to set the "details" property
-        setDetails(request, authRequest);
-
-        return this.getAuthenticationManager().authenticate(authRequest);
-    
     }
-    
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-            Authentication authResult) throws IOException, ServletException {
+                                            Authentication authResult) throws IOException, ServletException {
         // 存储登录认证信息到上下文
         SecurityContextHolder.getContext().setAuthentication(authResult);
         // 记住我服务
@@ -87,9 +87,10 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         JwtAuthenticatioToken token = new JwtAuthenticatioToken(null, null, JwtTokenUtils.generateToken(authResult));
         HttpUtils.write(response, token);
     }
-    
-    /** 
+
+    /**
      * 获取请求Body
+     *
      * @param request
      * @return
      */

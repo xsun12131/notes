@@ -34,7 +34,7 @@ public class JwtTokenUtils implements Serializable {
     /**
      * 密钥
      */
-    private static final String SECRET = "abcdefgh";
+    private static final String SECRET = "6BE6T@v*hsPxr32x";
     /**
      * 有效期12小时
      */

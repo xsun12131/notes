@@ -23,9 +23,12 @@ public class UserServiceImpl implements UserService {
     @Resource
     private RoleService roleService;
 
+    @Resource
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     private String encryptPassword(String password) {
         // BCryptPasswordEncoder 加密
-        return new BCryptPasswordEncoder().encode(password);
+        return bCryptPasswordEncoder.encode(password);
     }
 
     @Override

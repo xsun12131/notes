@@ -46,9 +46,9 @@ public class NoteController {
         return all;
     }
 
-    @GetMapping("search")
+    @PostMapping("search")
     @ApiOperation("搜索")
-    public PageResult<NoteListVo> search(SearchDto searchDto) {
+    public PageResult<NoteListVo> search(@RequestBody SearchDto searchDto) {
         return noteService.search(searchDto);
     }
 
