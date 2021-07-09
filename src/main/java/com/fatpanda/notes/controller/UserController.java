@@ -5,6 +5,7 @@ import com.fatpanda.notes.common.result.annotation.ResponseResult;
 import com.fatpanda.notes.pojo.entity.User;
 import com.fatpanda.notes.pojo.vo.UserSimple;
 import com.fatpanda.notes.service.UserService;
+import io.swagger.annotations.Api;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import java.util.List;
 @ResponseResult
 @Controller
 @RequestMapping("user")
+@Api(tags = "user")
 public class UserController {
 
     @Resource

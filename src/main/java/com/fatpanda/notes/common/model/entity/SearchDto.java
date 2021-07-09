@@ -1,5 +1,6 @@
 package com.fatpanda.notes.common.model.entity;
 
+import com.fatpanda.notes.common.utils.StringUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class SearchDto {
 
     private String query;
 
+    @ApiModelProperty(example = StringUtil.EMPTY)
     private String sort;
 
 }

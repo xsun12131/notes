@@ -15,6 +15,9 @@ public class NoteDto {
     @ApiModelProperty(value = "id")
     private String id;
 
+    @ApiModelProperty(value = "tags")
+    private String[] tags;
+
     @ApiModelProperty(value = "标题")
     @NotBlank
     private String title;

@@ -11,6 +11,7 @@ import com.fatpanda.notes.pojo.esEntity.EsNote;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
 import com.fatpanda.notes.repository.NoteRepository;
 import com.fatpanda.notes.service.NoteService;
+import com.fatpanda.notes.service.NoteTagService;
 import com.github.wenhao.jpa.Specifications;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -25,7 +26,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +41,8 @@ public class NoteServiceImpl implements NoteService {
     private NoteRepository noteRepository;
     @Resource
     private NoteEsRepository noteEsRepository;
+    @Resource
+    private NoteTagService noteTagService;
     @Resource
     private ElasticsearchRestTemplate template;
 
@@ -58,8 +60,10 @@ public class NoteServiceImpl implements NoteService {
                 .content(noteDto.getContent())
                 .build();
         note.setSummary(StringUtil.replaceMarkDown(note.getContent()));
+        note = noteRepository.save(note);
         noteEsRepository.save(EsNote.byNote(note));
-        return noteRepository.save(note);
+        noteTagService.save(noteDto.getTags(), note.getId());
+        return note;
     }
 
     /**
@@ -173,4 +177,14 @@ public class NoteServiceImpl implements NoteService {
         return pageResult;
     }
 
+    @Override
+    public List<NoteListVo> findIdIn(List<String> noteIdList) {
+        List<Note> noteList = noteRepository.findByIdIn(noteIdList);
+        return noteList.stream().map(note -> NoteListVo.builder()
+                .id(note.getId())
+                .summary(note.getSummary())
+                .title(note.getTitle())
+                .build())
+                .collect(Collectors.toList());
+    }
 }

@@ -66,4 +66,6 @@ public interface NoteService {
      * @return
      */
     PageResult<NoteListVo> search(SearchDto searchDto);
+
+    List<NoteListVo> findIdIn(List<String> noteIdList);
 }

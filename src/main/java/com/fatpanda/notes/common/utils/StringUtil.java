@@ -94,11 +94,12 @@ public class StringUtil extends org.apache.commons.lang3.StringUtils {
         if (isBlank(markdown)) {
             return "";
         }
-        markdown = markdown.length() > 400 ? markdown.substring(0, 400) : markdown;
-        return markdown
-                .replaceAll("#+\\s", " ")
+        markdown = markdown.length() > 800 ? markdown.substring(0, 800) : markdown;
+        markdown = markdown
                 .replaceAll("-+\\s", " ")
-                .substring(0, markdown.length() > 300 ? 300 : markdown.length());
+                .replaceAll("[`\\.!@%^&$\\*#＃/\\[\\]]", " ")
+                .replaceAll("\\s+", " ");
+        return markdown.substring(0, markdown.length() > 500 ? 500 : markdown.length());
     }
 
     /**

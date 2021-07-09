@@ -7,6 +7,8 @@ import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
 import com.fatpanda.notes.service.NoteService;
+import com.fatpanda.notes.service.NoteTagService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -18,16 +20,20 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Validated
 @ResponseResult
 @RestController
 @RequestMapping("note")
+@Api(tags = "note")
 public class NoteController {
 
     @Resource
     private NoteService noteService;
+    @Resource
+    private NoteTagService noteTagService;
 
     @PostMapping()
     @ApiOperation("新增或修改")
@@ -71,6 +77,11 @@ public class NoteController {
     @ApiOperation("解析markdown文件")
     public Note parseMd(MultipartFile multipartFile) {
         return noteService.parseMd(multipartFile);
+    }
+
+    @GetMapping("byTag")
+    public List<NoteListVo> findByTag(String tagName) {
+        return noteTagService.findNoteByTag(tagName);
     }
 
 }
