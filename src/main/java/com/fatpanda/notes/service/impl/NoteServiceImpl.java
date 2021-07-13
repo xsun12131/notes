@@ -150,7 +150,9 @@ public class NoteServiceImpl implements NoteService {
         // 构建布尔查询
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchDto.getQuery()));
-        boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
+        if(StringUtil.isNotBlank(searchDto.getQuery())) {
+            boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
+        }
         // 查询
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
         // 排序

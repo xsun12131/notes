@@ -1,5 +1,6 @@
 package com.fatpanda.notes.service.impl;
 
+import com.fatpanda.notes.common.utils.StringUtil;
 import com.fatpanda.notes.pojo.entity.NoteAndNoteTag;
 import com.fatpanda.notes.pojo.entity.NoteAndNoteTagKey;
 import com.fatpanda.notes.pojo.entity.NoteTag;
@@ -54,6 +55,9 @@ public class NoteTagServiceImpl implements NoteTagService {
 
     @Override
     public boolean save(String[] tags, String noteId) {
+        if(null == tags || StringUtil.isBlank(noteId)) {
+            return false;
+        }
 
         for (String tag : tags) {
             NoteTag noteTag = save(NoteTag.builder().name(tag).build());
