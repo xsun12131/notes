@@ -149,6 +149,7 @@ public class NoteServiceImpl implements NoteService {
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         // 构建布尔查询
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchDto.getQuery()));
         boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
         // 查询
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
@@ -162,14 +163,26 @@ public class NoteServiceImpl implements NoteService {
         nativeSearchQueryBuilder.withPageable(PageRequest.of(searchDto.getPageNum() - 1, searchDto.getPageSize()));
 
         // 构建高亮查询
-        HighlightBuilder.Field field = new HighlightBuilder.Field("content").preTags("<font style='color:red'>").postTags("</font>");
-        nativeSearchQueryBuilder.withHighlightFields(field);  // 名字高亮
+        HighlightBuilder.Field titleField = new HighlightBuilder.Field("title").preTags("<font style='color:red'>").postTags("</font>");
+        HighlightBuilder.Field contentField = new HighlightBuilder.Field("content").preTags("<font style='color:red'>").postTags("</font>");
+        nativeSearchQueryBuilder.withHighlightFields(titleField, contentField);  // 名字高亮
         NativeSearchQuery build = nativeSearchQueryBuilder.build();
 
         SearchHits<EsNote> esNoteSearchHits = template.search(build, EsNote.class);
         List<NoteListVo> noteListVoList = esNoteSearchHits.get().map(esNoteSearchHit -> {
             EsNote esNote = esNoteSearchHit.getContent();
-            return NoteListVo.builder().id(esNote.getId()).title(esNote.getTitle()).summary(esNoteSearchHit.getHighlightField("content").get(0)).build();
+            NoteListVo noteListVo = NoteListVo.builder().id(esNote.getId())
+                    .title(esNote.getTitle())
+                    .summary(esNote.getSummary())
+                    .build();
+            if (esNoteSearchHit.getHighlightField("title").size() > 0) {
+                noteListVo.setTitle(esNoteSearchHit.getHighlightField("title").get(0));
+            }
+            if (esNoteSearchHit.getHighlightField("content").size() > 0) {
+                List<String> content = esNoteSearchHit.getHighlightField("content");
+                noteListVo.setSummary(esNoteSearchHit.getHighlightField("content").get(0));
+            }
+            return noteListVo;
         }).collect(Collectors.toList());
 
         PageResult pageResult = new PageResult();

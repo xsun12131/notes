@@ -106,7 +106,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/swagger-resources", "/swagger-resources/configuration/security",
                 "/swagger-ui.html", "/webjars/**", "/csrf",
                 "/note/page","/note/search",
-                "/note/byTag"
+                "/note/byTag","/noteTag/all"
         ).and().ignoring().antMatchers(HttpMethod.GET, "/note");
     }
 
