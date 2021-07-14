@@ -1,6 +1,10 @@
 package com.fatpanda.notes.pojo.entity;
 
 import com.fatpanda.notes.common.model.config.BaseEntityListeners;
+import com.fatpanda.notes.common.model.entity.BaseEntity;
+import com.fatpanda.notes.repository.NoteSeriesRepository;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,9 +25,11 @@ import javax.persistence.Id;
 @Entity
 @Builder
 @EntityListeners({AuditingEntityListener.class, BaseEntityListeners.class})
-public class NoteSeries {
+@ApiModel("文章系列")
+public class NoteSeries implements BaseEntity {
 
     @Id
+    @ApiModelProperty(notes = "同noteId")
     private String id;
 
     private String name;

@@ -5,7 +5,9 @@ import com.fatpanda.notes.common.result.annotation.ResponseResult;
 import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
+import com.fatpanda.notes.pojo.entity.NoteSeries;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
+import com.fatpanda.notes.service.NoteSeriesService;
 import com.fatpanda.notes.service.NoteService;
 import com.fatpanda.notes.service.NoteTagService;
 import io.swagger.annotations.Api;
@@ -34,6 +36,8 @@ public class NoteController {
     private NoteService noteService;
     @Resource
     private NoteTagService noteTagService;
+    @Resource
+    private NoteSeriesService noteSeriesService;
 
     @PostMapping()
     @ApiOperation("新增或修改")
@@ -80,8 +84,21 @@ public class NoteController {
     }
 
     @GetMapping("byTag")
+    @ApiOperation("查找同标签的文章")
     public List<NoteListVo> findByTag(String tagName) {
         return noteTagService.findNoteByTag(tagName);
+    }
+
+    @GetMapping("findSameSeries")
+    @ApiOperation("查找同系列文章")
+    public List<NoteListVo> findSameSeries(String noteId) {
+        return noteSeriesService.findSameSeries(noteId);
+    }
+
+    @PostMapping("addSeries")
+    @ApiOperation("添加系列")
+    public NoteSeries saveSeries(@RequestBody NoteSeries noteSeries) {
+        return noteSeriesService.save(noteSeries);
     }
 
 }

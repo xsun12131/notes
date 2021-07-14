@@ -21,6 +21,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
@@ -76,7 +77,7 @@ public class NoteServiceImpl implements NoteService {
     @Override
     public PageResult<NoteListVo> findAll(Integer pageNum, Integer pageSize) {
         Specification<Note> specifications = Specifications.<Note>and().build();
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
         Page<Note> all = noteRepository.findAll(specifications, pageable);
         PageResult<NoteListVo> pageResult =
                 PageResult.pageToPageResult(all, all.stream().map(note -> NoteListVo.builder()
@@ -149,15 +150,15 @@ public class NoteServiceImpl implements NoteService {
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         // 构建布尔查询
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchDto.getQuery()));
-        if(StringUtil.isNotBlank(searchDto.getQuery())) {
+        if (StringUtil.isNotBlank(searchDto.getQuery())) {
+            boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchDto.getQuery()));
             boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
         }
         // 查询
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
         // 排序
         String sortField = searchDto.getSort();      // 排序字段
-        String sortRule = "ASC";        // 排序规则 - 顺序(ASC)/倒序(DESC)
+        String sortRule = StringUtil.isNotBlank(searchDto.getSortRule()) ? searchDto.getSortRule() : "ASC";        // 排序规则 - 顺序(ASC)/倒序(DESC)
         if (StringUtil.isNotBlank(sortField)) {
             nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort(sortField).order(SortOrder.valueOf(sortRule)));
         }

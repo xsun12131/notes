@@ -22,4 +22,7 @@ public class SearchDto {
     @ApiModelProperty(example = StringUtil.EMPTY)
     private String sort;
 
+    @ApiModelProperty(example = "DESC")
+    private String sortRule;
+
 }
