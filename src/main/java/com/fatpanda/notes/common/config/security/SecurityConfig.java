@@ -2,7 +2,7 @@ package com.fatpanda.notes.common.config.security;
 
 import com.fatpanda.notes.common.result.entity.Result;
 import com.fatpanda.notes.common.result.entity.ResultCode;
-import com.fatpanda.notes.common.utils.JsonUtils;
+import com.fatpanda.notes.common.utils.JsonUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -79,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     resp.setCharacterEncoding("utf-8");
                     resp.setContentType("text/html; charset=utf-8");
                     PrintWriter out = resp.getWriter();
-                    out.write(JsonUtils.toJson(result));
+                    out.write(JsonUtil.toJson(result));
                     out.flush();
                     out.close();
                 })
@@ -88,7 +88,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     resp.setCharacterEncoding("utf-8");
                     resp.setContentType("text/html; charset=utf-8");
                     PrintWriter out = resp.getWriter();
-                    out.write(JsonUtils.toJson(result));
+                    out.write(JsonUtil.toJson(result));
                     out.flush();
                     out.close();
                 })
@@ -106,6 +106,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/swagger-resources", "/swagger-resources/configuration/security",
                 "/swagger-ui.html", "/webjars/**", "/csrf",
                 "/js/**","/css/**","/favicon.ico","/index.html","/fonts/**",
+                "/static/**", "/koTime",
                 "/note/page","/note/search",
                 "/note/byTag",
                 "/note/byTag","/noteTag/all"

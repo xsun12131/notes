@@ -13,7 +13,16 @@ import java.io.IOException;
  * @author Louis
  * @date Jun 29, 2019
  */
-public class HttpUtils {
+public class HttpUtil {
+
+	static final String localhostAddr = "0:0:0:0:0:0:0:1";
+
+	public static String localhostAddr(String addr){
+		if(localhostAddr.equals(addr)) {
+			return "localhost";
+		}
+		return addr;
+	}
 
 	/**
 	 * 获取HttpServletRequest对象
@@ -32,7 +41,7 @@ public class HttpUtils {
 	public static void write(HttpServletResponse response, Object data) throws IOException {
 		response.setContentType("application/json; charset=utf-8");
         Result result = Result.OK(data);
-        String json = JsonUtils.toJson(result);
+        String json = JsonUtil.toJson(result);
         response.getWriter().print(json);
         response.getWriter().flush();
         response.getWriter().close();

@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.logging.Logger;
 
+/**
+ * @author fatpanda
+ */
 @Component
 public class MyCorsFilter implements Filter {
 
-    private final Logger logger = Logger.getLogger(this.getClass().getPackage().getName());
-
+    @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
 
@@ -26,9 +27,11 @@ public class MyCorsFilter implements Filter {
         chain.doFilter(req, response);
     }
 
+    @Override
     public void init(FilterConfig filterConfig) {
     }
 
+    @Override
     public void destroy() {
     }
 

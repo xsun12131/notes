@@ -1,5 +1,8 @@
 package com.fatpanda.notes.service.impl;
 
+import com.fatpanda.notes.common.model.entity.BasePageDto;
+import com.fatpanda.notes.common.model.entity.SearchDto;
+import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.common.utils.StringUtil;
 import com.fatpanda.notes.pojo.entity.NoteAndNoteTag;
 import com.fatpanda.notes.pojo.entity.NoteAndNoteTagKey;
@@ -44,18 +47,18 @@ public class NoteTagServiceImpl implements NoteTagService {
     }
 
     @Override
-    public List<NoteListVo> findNoteByTag(String tagName) {
-        NoteTag noteTag = noteTagRepository.findByName(tagName);
+    public PageResult<NoteListVo> findNoteByTag(SearchDto searchDto) {
+        NoteTag noteTag = noteTagRepository.findByName(searchDto.getQuery());
         if (null == noteTag) {
-            return Collections.emptyList();
+            return new PageResult<>().listToPageResult(Collections.emptyList(), searchDto.getPageNum(), searchDto.getPageSize());
         }
         List<String> noteIdList = noteAndNoteTagRepository.findByNoteTagId(noteTag.getId());
-        return noteService.findIdIn(noteIdList);
+        return noteService.findIdIn(new BasePageDto(searchDto.getPageSize(), searchDto.getPageNum()), noteIdList);
     }
 
     @Override
     public boolean save(String[] tags, String noteId) {
-        if(null == tags || StringUtil.isBlank(noteId)) {
+        if (null == tags || StringUtil.isBlank(noteId)) {
             return false;
         }
 

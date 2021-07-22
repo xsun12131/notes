@@ -11,6 +11,8 @@ import javax.annotation.Resource;
 /**
  * @author xyy
  * @date 2021/7/8
+ *
+ * 用户初始化
  */
 @Slf4j
 @Configuration

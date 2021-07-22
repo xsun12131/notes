@@ -11,5 +11,6 @@ import java.util.List;
  */
 public interface NoteSeriesRepository extends JpaRepository<NoteSeries, String> {
 
-        List<NoteSeries> findByParentId(String parentId);
+    List<NoteSeries> findByParentId(String parentId);
+
 }

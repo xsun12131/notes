@@ -3,6 +3,7 @@ package com.fatpanda.notes.controller;
 import com.fatpanda.notes.common.model.entity.SearchDto;
 import com.fatpanda.notes.common.result.annotation.ResponseResult;
 import com.fatpanda.notes.common.result.entity.PageResult;
+import com.fatpanda.notes.common.result.entity.Result;
 import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
 import com.fatpanda.notes.pojo.entity.NoteSeries;
@@ -22,9 +23,11 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+/**
+ * @author fatpanda
+ */
 @Validated
 @ResponseResult
 @RestController
@@ -71,8 +74,8 @@ public class NoteController {
 
     @DeleteMapping("batch")
     @ApiOperation("批量删除")
-    public Map deleteBatch(@RequestBody String[] ids) {
-        Map<String, Object> map = new HashMap();
+    public Map<String, Object> deleteBatch(@RequestBody String[] ids) {
+        Map<String, Object> map = new HashMap(1);
         map.put("成功删除的id", noteService.deleteNoteBatch(ids));
         return map;
     }
@@ -85,20 +88,29 @@ public class NoteController {
 
     @GetMapping("byTag")
     @ApiOperation("查找同标签的文章")
-    public List<NoteListVo> findByTag(String tagName) {
-        return noteTagService.findNoteByTag(tagName);
+    public PageResult<NoteListVo> findByTag(SearchDto searchDto) {
+        searchDto.setPageNum(searchDto.getPageNum() - 1);
+        return noteTagService.findNoteByTag(searchDto).fixPageNum(searchDto.getPageNum() + 1);
     }
 
     @GetMapping("findSameSeries")
     @ApiOperation("查找同系列文章")
-    public List<NoteListVo> findSameSeries(String noteId) {
-        return noteSeriesService.findSameSeries(noteId);
+    public PageResult findSameSeries(SearchDto searchDto) {
+        searchDto.setPageNum(searchDto.getPageNum() - 1);
+        return noteSeriesService.findSameSeries(searchDto).fixPageNum(searchDto.getPageNum() + 1);
     }
 
     @PostMapping("addSeries")
     @ApiOperation("添加系列")
     public NoteSeries saveSeries(@RequestBody NoteSeries noteSeries) {
         return noteSeriesService.save(noteSeries);
+    }
+
+    @GetMapping("refreshEsNote")
+    @ApiOperation("刷新es")
+    public Result refreshEsNote() {
+        noteService.refreshEsNote();
+        return Result.OK();
     }
 
 }

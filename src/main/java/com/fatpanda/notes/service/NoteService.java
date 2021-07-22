@@ -1,5 +1,6 @@
 package com.fatpanda.notes.service;
 
+import com.fatpanda.notes.common.model.entity.BasePageDto;
 import com.fatpanda.notes.common.model.entity.SearchDto;
 import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.pojo.dto.NoteDto;
@@ -68,4 +69,8 @@ public interface NoteService {
     PageResult<NoteListVo> search(SearchDto searchDto);
 
     List<NoteListVo> findIdIn(List<String> noteIdList);
+
+    PageResult<NoteListVo> findIdIn(BasePageDto basePageDto, List<String> noteIdList);
+
+    void refreshEsNote();
 }

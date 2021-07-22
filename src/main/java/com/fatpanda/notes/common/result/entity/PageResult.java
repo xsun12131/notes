@@ -87,4 +87,9 @@ public class PageResult<T> {
         return pageResult;
     }
 
+    public PageResult fixPageNum(Integer pageNum) {
+        setPageNum(pageNum);
+        return this;
+    }
+
 }

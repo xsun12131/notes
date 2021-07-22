@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fatpanda.notes.common.result.annotation.ResponseResult;
 import com.fatpanda.notes.common.result.entity.Result;
 import com.fatpanda.notes.common.result.entity.ResultCode;
-import com.fatpanda.notes.common.utils.JsonUtils;
+import com.fatpanda.notes.common.utils.JsonUtil;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -47,7 +47,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
             return o;
         } else if (o instanceof String) {
             try {
-                return JsonUtils.toJson(Result.OK(o));
+                return JsonUtil.toJson(Result.OK(o));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 return Result.ERROR(ResultCode.SERVER_ERROR);

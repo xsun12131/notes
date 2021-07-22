@@ -1,5 +1,7 @@
 package com.fatpanda.notes.service;
 
+import com.fatpanda.notes.common.model.entity.SearchDto;
+import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.pojo.entity.NoteTag;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
 
@@ -17,5 +19,5 @@ public interface NoteTagService {
 
     NoteTag save(NoteTag noteTag);
 
-    List<NoteListVo> findNoteByTag(String tagName);
+    PageResult<NoteListVo> findNoteByTag(SearchDto searchDto);
 }

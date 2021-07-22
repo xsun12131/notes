@@ -1,5 +1,6 @@
 package com.fatpanda.notes.service.impl;
 
+import com.fatpanda.notes.common.model.entity.BasePageDto;
 import com.fatpanda.notes.common.model.entity.SearchDto;
 import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.common.utils.FileUtil;
@@ -27,12 +28,14 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -150,6 +153,7 @@ public class NoteServiceImpl implements NoteService {
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         // 构建布尔查询
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        //关键词
         if (StringUtil.isNotBlank(searchDto.getQuery())) {
             boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchDto.getQuery()));
             boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchDto.getQuery()));
@@ -157,8 +161,10 @@ public class NoteServiceImpl implements NoteService {
         // 查询
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
         // 排序
-        String sortField = searchDto.getSort();      // 排序字段
-        String sortRule = StringUtil.isNotBlank(searchDto.getSortRule()) ? searchDto.getSortRule() : "ASC";        // 排序规则 - 顺序(ASC)/倒序(DESC)
+        // 排序字段
+        String sortField = searchDto.getSort();
+        // 排序规则 - 顺序(ASC)/倒序(DESC)
+        String sortRule = (StringUtil.isNotBlank(searchDto.getSortRule()) && StringUtil.equalsAny(searchDto.getSortRule(), "ASC","DESC")) ? searchDto.getSortRule() : "ASC";
         if (StringUtil.isNotBlank(sortField)) {
             nativeSearchQueryBuilder.withSort(SortBuilders.fieldSort(sortField).order(SortOrder.valueOf(sortRule)));
         }
@@ -168,7 +174,8 @@ public class NoteServiceImpl implements NoteService {
         // 构建高亮查询
         HighlightBuilder.Field titleField = new HighlightBuilder.Field("title").preTags("<font style='color:red'>").postTags("</font>");
         HighlightBuilder.Field contentField = new HighlightBuilder.Field("content").preTags("<font style='color:red'>").postTags("</font>");
-        nativeSearchQueryBuilder.withHighlightFields(titleField, contentField);  // 名字高亮
+        // 名字高亮
+        nativeSearchQueryBuilder.withHighlightFields(titleField, contentField);
         NativeSearchQuery build = nativeSearchQueryBuilder.build();
 
         SearchHits<EsNote> esNoteSearchHits = template.search(build, EsNote.class);
@@ -193,6 +200,7 @@ public class NoteServiceImpl implements NoteService {
         return pageResult;
     }
 
+
     @Override
     public List<NoteListVo> findIdIn(List<String> noteIdList) {
         List<Note> noteList = noteRepository.findByIdIn(noteIdList);
@@ -203,4 +211,27 @@ public class NoteServiceImpl implements NoteService {
                 .build())
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public PageResult<NoteListVo> findIdIn(BasePageDto basePageDto, List<String> noteIdList) {
+        List<Note> noteList = noteRepository.findByIdIn(noteIdList);
+        List<NoteListVo> collect = noteList.stream().map(note -> NoteListVo.builder()
+                .id(note.getId())
+                .summary(note.getSummary())
+                .title(note.getTitle())
+                .build())
+                .collect(Collectors.toList());
+        return new PageResult<NoteListVo>().listToPageResult(collect, basePageDto.getPageNum(), basePageDto.getPageSize());
+    }
+
+    /**
+     * 刷新es内数据
+     */
+    @Override
+    public void refreshEsNote() {
+        List<Note> all = noteRepository.findAll();
+        noteEsRepository.saveAll(all.stream().map(note -> EsNote.byNote(note)).collect(Collectors.toList()));
+    }
+
+
 }

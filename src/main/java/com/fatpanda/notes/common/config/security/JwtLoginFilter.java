@@ -1,8 +1,13 @@
 package com.fatpanda.notes.common.config.security;
 
-import com.fatpanda.notes.common.utils.HttpUtils;
-import com.fatpanda.notes.common.utils.JsonUtils;
+import com.fatpanda.notes.common.result.entity.Result;
+import com.fatpanda.notes.common.result.entity.ResultCode;
+import com.fatpanda.notes.common.utils.HttpUtil;
+import com.fatpanda.notes.common.utils.JsonUtil;
 import com.fatpanda.notes.pojo.dto.UserLogin;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
@@ -17,11 +22,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 启动登录认证流程过滤器
@@ -35,6 +39,13 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         setAuthenticationManager(authManager);
     }
 
+    private Cache<Object, Object> userLoginErrorCache = Caffeine.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .build();
+
+    private final Integer MaxErrorNum = 5;
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
@@ -44,14 +55,15 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        // 可以在此覆写尝试进行登录认证的逻辑，登录成功之后等操作不再此方法内
-        // 如果使用此过滤器来触发登录认证流程，注意登录请求数据格式的问题
-        // 此过滤器的用户名密码默认从request.getParameter()获取，但是这种
-        // 读取方式不能读取到如 application/json 等 post 请求数据，需要把
-        // 用户名密码的读取逻辑修改为到流中读取request.getInputStream()
+        String remoteHost = request.getRemoteHost();
+        Integer errorNum = (Integer) userLoginErrorCache.get(remoteHost, v -> 0);
+        if(errorNum > MaxErrorNum) {
+            return null;
+        }
+
         if (request.getContentType().contains(MediaType.APPLICATION_JSON_VALUE)) {
             String body = getBody(request);
-            UserLogin userLogin = JsonUtils.fromJson(body, UserLogin.class);
+            UserLogin userLogin = JsonUtil.fromJson(body, UserLogin.class);
             String username = userLogin.getUsername();
             String password = userLogin.getPassword();
             if (username == null) {
@@ -85,7 +97,22 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         }
         // 生成并返回token给客户端，后续访问携带此token
         JwtAuthenticatioToken token = new JwtAuthenticatioToken(null, null, JwtTokenUtils.generateToken(authResult));
-        HttpUtils.write(response, token);
+        HttpUtil.write(response, token);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        String remoteHost = request.getRemoteHost();
+        Integer errorNum = (Integer) userLoginErrorCache.get(remoteHost, v -> 0);
+        userLoginErrorCache.put(remoteHost, errorNum + 1);
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("text/html; charset=utf-8");
+        PrintWriter out = response.getWriter();
+        out.write(JsonUtil.toJson(Result.ERROR(ResultCode.USER_NOT_LOGIN)));
+        out.flush();
+        out.close();
+        super.unsuccessfulAuthentication(request, response, failed);
     }
 
     /**

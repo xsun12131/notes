@@ -6,19 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author fatpanda
+ * @author xyy
+ * @date 2021/7/22
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchDto extends BasePageDto{
+public class BasePageDto {
 
-    private String query;
+    @ApiModelProperty(example = "10")
+    private Integer pageSize;
 
-    @ApiModelProperty()
-    private String sort;
-
-    @ApiModelProperty(example = "DESC")
-    private String sortRule;
+    @ApiModelProperty(example = "1")
+    private Integer pageNum;
 
 }

@@ -36,6 +36,7 @@ public class Swagger2Config {
     @Bean
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
+                .enable(enableFlag)
                 .apiInfo(getApiInfo())
                 .select()
                 //设置Controller层所在的包名
@@ -91,7 +92,9 @@ public class Swagger2Config {
         return securityContexts;
     }
 
-    //增加全局认证
+    /**
+     * 增加全局认证
+     */
     List<SecurityReference> defaultAuth() {
         AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
