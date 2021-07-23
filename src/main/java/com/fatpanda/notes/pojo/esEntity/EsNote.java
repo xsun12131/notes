@@ -1,5 +1,6 @@
 package com.fatpanda.notes.pojo.esEntity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fatpanda.notes.common.model.entity.BaseEntity;
 import com.fatpanda.notes.pojo.entity.Note;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,6 +13,7 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
@@ -46,10 +48,14 @@ public class EsNote implements BaseEntity {
 
     @ApiModelProperty(value = "创建时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @ApiModelProperty(value = "更新时间")
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     public static EsNote byNote(Note note) {

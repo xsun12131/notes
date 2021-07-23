@@ -3,6 +3,7 @@ package com.fatpanda.notes.repository;
 import com.fatpanda.notes.pojo.entity.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
@@ -26,4 +27,7 @@ public interface NoteRepository extends JpaRepository<Note, String>, JpaSpecific
      * @return NoteList
      */
     List<Note> findByIdIn(List<String> idList);
+
+    @Query("select nt.name from NoteTag nt left join NoteAndNoteTag nnt on nnt.id.noteTagId = nt.id where nnt.id.noteId = ?1")
+    List<String> findTagsOfNote(String noteId);
 }

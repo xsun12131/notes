@@ -6,6 +6,7 @@ import com.fatpanda.notes.common.result.entity.PageResult;
 import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
+import com.fatpanda.notes.pojo.vo.NoteVo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public interface NoteService {
      * @param noteDto note
      * @return Note
      */
-    Note save(NoteDto noteDto);
+    NoteVo save(NoteDto noteDto);
 
     /**
      * 根据查询条件查询所有Note
@@ -50,7 +51,7 @@ public interface NoteService {
      * @param id
      * @return
      */
-    Note getById(String id);
+    NoteVo getById(String id);
 
     /**
      * 解析markdown文档并返回note

@@ -8,6 +8,7 @@ import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
 import com.fatpanda.notes.pojo.entity.NoteSeries;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
+import com.fatpanda.notes.pojo.vo.NoteVo;
 import com.fatpanda.notes.service.NoteSeriesService;
 import com.fatpanda.notes.service.NoteService;
 import com.fatpanda.notes.service.NoteTagService;
@@ -44,7 +45,7 @@ public class NoteController {
 
     @PostMapping()
     @ApiOperation("新增或修改")
-    public Note save(@RequestBody NoteDto noteDto) {
+    public NoteVo save(@RequestBody NoteDto noteDto) {
         return noteService.save(noteDto);
     }
 
@@ -68,7 +69,7 @@ public class NoteController {
     @GetMapping()
     @ApiOperation("查询")
     @ApiImplicitParam(name = "id", paramType = "query")
-    public Note getOne(@Valid @NotNull String id) {
+    public NoteVo getOne(@Valid @NotNull String id) {
         return noteService.getById(id);
     }
 

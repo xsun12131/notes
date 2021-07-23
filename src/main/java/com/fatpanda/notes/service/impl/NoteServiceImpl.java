@@ -10,6 +10,7 @@ import com.fatpanda.notes.pojo.dto.NoteDto;
 import com.fatpanda.notes.pojo.entity.Note;
 import com.fatpanda.notes.pojo.esEntity.EsNote;
 import com.fatpanda.notes.pojo.vo.NoteListVo;
+import com.fatpanda.notes.pojo.vo.NoteVo;
 import com.fatpanda.notes.repository.NoteRepository;
 import com.fatpanda.notes.service.NoteService;
 import com.fatpanda.notes.service.NoteTagService;
@@ -28,7 +29,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +36,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,17 +58,22 @@ public class NoteServiceImpl implements NoteService {
      * @return Note
      */
     @Override
-    public Note save(NoteDto noteDto) {
+    public NoteVo save(NoteDto noteDto) {
+        Optional<Note> noteOptional = noteRepository.findById(noteDto.getId());
+
         Note note = Note.builder()
                 .id(noteDto.getId())
                 .title(noteDto.getTitle())
                 .content(noteDto.getContent())
                 .build();
+        if (noteOptional.isPresent()) {
+            note.setCreateTime(noteOptional.get().getCreateTime());
+        }
         note.setSummary(StringUtil.replaceMarkDown(note.getContent()));
         note = noteRepository.save(note);
         noteEsRepository.save(EsNote.byNote(note));
         noteTagService.save(noteDto.getTags(), note.getId());
-        return note;
+        return NoteVo.byNoteAndTags(note, noteDto.getTags());
     }
 
     /**
@@ -127,8 +133,13 @@ public class NoteServiceImpl implements NoteService {
      * @return
      */
     @Override
-    public Note getById(String id) {
-        return noteRepository.findById(id).orElse(null);
+    public NoteVo getById(String id) {
+        Note note = noteRepository.findById(id).orElse(null);
+        if(Objects.isNull(note)) {
+            return null;
+        }
+        List<String> tags = noteRepository.findTagsOfNote(note.getId());
+        return NoteVo.byNoteAndTags(note, tags.toArray(new String[0]));
     }
 
     /**
