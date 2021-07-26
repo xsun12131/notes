@@ -19,7 +19,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -62,8 +61,11 @@ public class LogAspect {
         Method method = signature.getMethod();
         ApiOperation controllerLog = method
                 .getAnnotation(ApiOperation.class);
-        String discription = controllerLog.value();
-        return discription;
+        if(null == controllerLog) {
+            return "no description";
+        }
+        String description = controllerLog.value();
+        return description;
     }
 
     /**
@@ -85,7 +87,7 @@ public class LogAspect {
         beginTimeThreadLocal.set(beginTime);
         //debug模式下 显式打印开始时间用于调试
         if (logger.isDebugEnabled()) {
-            logger.debug("开始计时: {}  URI: {}", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+            logger.debug("开始计时: {}  URI: {}", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                     .format(beginTime), request.getRequestURI());
         }
 
